@@ -3,12 +3,11 @@ def load_from_file(filename):
     students = []
 
     try:
-        with open(filename, "r") as file:
-            for line in file:
-                parts = line.strip().split("#")
+        infile = open(filename, "r")
+        for line in infile:
+                parts = line.strip().split("#") # parts = ["2321123", " Aman", " 21.0 24.0"]
 
                 if len(parts) != 3:
-                    print("Invalid line format:", line)
                     continue
 
                 student_id = parts[0].strip()
@@ -37,7 +36,7 @@ def load_from_file(filename):
 
     return students
 
-students = load_from_file("students.txt")
+students = load_from_file("students.txt") #
 
 
 # Option 1: This function displays grade information for all students
@@ -76,41 +75,44 @@ def display_all_students(students):
 
 # Option 2: This function displays grade information for one particular student
 def display_one_student(students):
-    # Read the student ID from the user
-    student_id = input("Enter studentID: ").strip()
+    # Ask the user which student's information they want to see.
+    student_id = input("Enter studentID: ")
 
-    # Variable to store the matched student
-    found_student = None
+    # We will use this variable to remember whether we found the student.
+    student_found = False
 
-    # Search for the student in the list
+    # Go through the student list one by one.
     for student in students:
+        # Check whether the current student's ID matches the ID entered by the user.
         if student["id"] == student_id:
-            found_student = student
+            student_found = True
+
+            # Print the heading for the table first.
+            print(f"\n{'StudentID':<12}{'Student Name':<22}", end="")
+
+            # Print one test title for each grade the student has.
+            # Example: if the student has 3 grades, we print Test1, Test2, Test3.
+            for i in range(len(student["grades"])):
+                print(f"{'Test' + str(i + 1):<8}", end="")
+            print()
+
+            # Print the student's ID and name on the same row.
+            print(f"{student['id']:<12}{student['name']:<22}", end="")
+
+            # Print all grades for that student.
+            for grade in student["grades"]:
+                print(f"{grade:<8}", end="")
+            print()
+
+            # We found the correct student, so no need to keep checking.
             break
 
-    # If student ID is not found
-    if found_student is None:
+    # If no matching student was found after checking the whole list,
+    # show an error message.
+    if student_found == False:
         print("Error: Invalid student ID")
-        input("Press Enter key to continue . . .")
-        return
 
-    # Print header
-    print(f"\n{'StudentID':<12}{'Student Name':<22}", end="")
-
-    # Print dynamic test headings
-    for i in range(len(found_student["grades"])):
-        print(f"{'Test' + str(i + 1):<8}", end="")
-    print()
-
-    # Print student ID and name
-    print(f"{found_student['id']:<12}{found_student['name']:<22}", end="")
-
-    # Print all grades
-    for grade in found_student["grades"]:
-        print(f"{grade:<8}", end="")
-    print()
-
-    # Wait for Enter before returning to menu
+    # Pause so the user can read the result before returning to the menu.
     input("\nPress Enter key to continue . . .")
 
 
@@ -151,7 +153,7 @@ def display_all_averages(students):
 # Option 4: This function modifies one quiz grade for one particular student
 def modify_student_grade(students):
     # Read student ID from the user
-    student_id = input("Please enter studentID: ").strip()
+    student_id = input("Please enter studentID: ")
 
     # Search for the student first
     found_student = None
@@ -192,7 +194,7 @@ def modify_student_grade(students):
         return
 
     # Print student data before modification
-    print("\nBefore grade modification:", end=" ")
+    print("\nBefore grade modification:" )
     print(found_student["id"], found_student["name"], end=" ")
     for grade in found_student["grades"]:
         print(grade, end=" ")
@@ -255,7 +257,7 @@ def add_test_grades_for_all_students(students):
 # Option 6: This function adds a new student to the students list
 def add_new_student(students):
     # Read the new student ID
-    new_id = input("Please enter new studentID: ").strip()
+    new_id = input("Please enter new studentID: ")
 
     # Check if the same ID already exists
     for student in students:
@@ -332,7 +334,7 @@ def delete_student(students):
     input("Press Enter key to continue . . .")
 
 
-# Save function: This function saves all student data to the same file format
+# Option 8: Save function: This function saves all student data to the same file format
 def save_to_file(students):
     with open("students.txt", "w") as file:
         for student in students:
