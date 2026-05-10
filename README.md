@@ -1,10 +1,14 @@
-# Student Grade Management System
+# MarkNova Student Grade Manager
 
-A simple Python console application for managing student records and quiz/test grades.
+A Python and Flask application for managing student records and quiz/test grades.
 
 ## Overview
 
-This project loads student data from a text file, allows the user to view and update records through a menu-driven interface, and saves the updated data back to the file.
+This project loads student data from a text file, allows the user to view and update records through either a console menu or the MarkNova browser interface, and saves the updated data back to the file.
+
+## Preview
+
+![MarkNova main page](docs/marknova-main.png)
 
 ## Features
 
@@ -26,8 +30,11 @@ This project loads student data from a text file, allows the user to view and up
 ## Requirements
 
 - Python 3
+- Flask
 
 ## How to Run
+
+### Console version
 
 1. Open a terminal in the project folder.
 2. Run:
@@ -37,6 +44,26 @@ python main.py
 ```
 
 3. Use the menu options shown in the terminal.
+
+### Browser GUI version
+
+1. Install Flask if needed:
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Start the Flask app:
+
+```bash
+python app.py
+```
+
+3. Open this address in your browser:
+
+```text
+http://127.0.0.1:5000
+```
 
 ## Sample I/O
 
@@ -113,4 +140,4 @@ Example:
 
 ## Author
 
-Course project for CSE101 - Introduction to Python.
+Student grade management project.

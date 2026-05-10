@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MarkNova</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="control-rail">
+            <div class="brand-block">
+                <div class="brand-mark">MN</div>
+                <div>
+                    <h1>MarkNova</h1>
+                    <p>Student performance tracker</p>
+                </div>
+            </div>
+
+            <form class="panel" action="{{ url_for('add_student') }}" method="post">
+                <div class="panel-heading">
+                    <h2>Add Student</h2>
+                    <span class="panel-tag">New record</span>
+                </div>
+                <label for="student_id">Student ID</label>
+                <input id="student_id" name="student_id" type="text" required placeholder="2320000">
+
+                <label for="name">Student Name</label>
+                <input id="name" name="name" type="text" required placeholder="Student name">
+
+                <label for="grades">Grades</label>
+                <input id="grades" name="grades" type="text" placeholder="75 82 91">
+
+                <button class="primary-button" type="submit">Add Student</button>
+            </form>
+
+            <form class="panel" action="{{ url_for('update_grade') }}" method="post">
+                <div class="panel-heading">
+                    <h2>Modify Grade</h2>
+                    <span class="panel-tag">Edit or fill</span>
+                </div>
+                <label for="student_select">Student</label>
+                <select id="student_select" name="student_id" required>
+                    <option value="" selected disabled>Select student</option>
+                    {% for student in all_students %}
+                        <option value="{{ student.id }}" data-next-test="{{ student.tests + 1 }}" {% if focus == student.id %}selected{% endif %}>
+                            {{ student.id }} - {{ student.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <div class="field-pair">
+                    <div>
+                        <label for="quiz_number">Test No.</label>
+                        <input id="quiz_number" name="quiz_number" type="number" min="1" step="1" required>
+                    </div>
+                    <div>
+                        <label for="grade">Grade</label>
+                        <input id="grade" name="grade" type="number" min="0" max="100" step="0.1" required>
+                    </div>
+                </div>
+
+                <button class="primary-button tone-green" type="submit">Save Grade</button>
+            </form>
+        </aside>
+
+        <main class="main-workspace">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-stack">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="summary-band" aria-label="Class summary">
+                <article class="metric-tile">
+                    <span class="metric-label">Students</span>
+                    <strong>{{ stats.total_students }}</strong>
+                    <span class="metric-note">{{ stats.empty_students }} without tests</span>
+                </article>
+                <article class="metric-tile">
+                    <span class="metric-label">Class Average</span>
+                    <strong>{{ stats.class_average|format_average }}</strong>
+                    <div class="meter" aria-hidden="true">
+                        <span style="width: {{ stats.class_average or 0 }}%"></span>
+                    </div>
+                </article>
+                <article class="metric-tile">
+                    <span class="metric-label">Top Student</span>
+                    {% if stats.top_student %}
+                        <strong>{{ stats.top_student.name }}</strong>
+                        <span class="metric-note">{{ stats.top_student.average|format_average }} average</span>
+                    {% else %}
+                        <strong>No tests</strong>
+                        <span class="metric-note">Waiting for grades</span>
+                    {% endif %}
+                </article>
+                <article class="metric-tile accent-alert">
+                    <span class="metric-label">Needs Focus</span>
+                    <strong>{{ stats.needs_focus }}</strong>
+                    <span class="metric-note">{{ stats.total_grades }} grades saved</span>
+                </article>
+            </section>
+
+            <section class="toolbar-band">
+                <div>
+                    <h2>Student Ledger</h2>
+                    <p>Saved in students.txt</p>
+                </div>
+                <form class="search-form" action="{{ url_for('index') }}" method="get">
+                    <input id="liveSearch" name="q" value="{{ query }}" type="search" placeholder="Search name or ID">
+                    <button type="submit">Search</button>
+                    {% if query %}
+                        <a class="ghost-link" href="{{ url_for('index') }}">Clear</a>
+                    {% endif %}
+                </form>
+            </section>
+
+            <section class="ledger-surface">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                {% for number in range(1, stats.max_tests + 1) %}
+                                    <th>Test {{ number }}</th>
+                                {% endfor %}
+                                <th>Average</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentRows">
+                            {% for student in students %}
+                                <tr data-student-row data-search="{{ student.id }} {{ student.name }}" {% if focus == student.id %}class="is-focused"{% endif %}>
+                                    <td class="student-id">{{ student.id }}</td>
+                                    <td class="student-name">{{ student.name }}</td>
+                                    {% for index in range(stats.max_tests) %}
+                                        <td>
+                                            {% if index < student.grades|length %}
+                                                <span class="grade-pill {{ student.grades[index]|grade_tone }}">
+                                                    {{ "%.1f"|format(student.grades[index]) }}
+                                                </span>
+                                            {% else %}
+                                                <span class="empty-grade">--</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                    <td class="average-cell">{{ student.average|format_average }}</td>
+                                    <td>
+                                        <span class="status-chip status-{{ student.status|lower|replace(' ', '-') }}">
+                                            {{ student.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form action="{{ url_for('delete_student', student_id=student.id) }}" method="post" data-confirm="Delete {{ student.name }}?">
+                                            <button class="danger-button" type="submit">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td class="empty-state" colspan="{{ stats.max_tests + 5 }}">No student records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="test-entry-surface">
+                <div class="section-heading">
+                    <div>
+                        <h2>Test {{ stats.max_tests + 1 }} Entry Board</h2>
+                        <p>Add the next test score for every student at once.</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('add_test_for_all') }}" method="post">
+                    <div class="test-grid">
+                        {% for student in all_students %}
+                            <label class="test-input-card" for="grade_{{ student.id }}">
+                                <span>{{ student.id }}</span>
+                                <strong>{{ student.name }}</strong>
+                                <input id="grade_{{ student.id }}" name="grade_{{ student.id }}" type="number" min="0" max="100" step="0.1" placeholder="0-100">
+                            </label>
+                        {% else %}
+                            <p class="empty-copy">Add students before entering a class test.</p>
+                        {% endfor %}
+                    </div>
+                    {% if all_students %}
+                        <button class="primary-button wide-button" type="submit">Save Test {{ stats.max_tests + 1 }}</button>
+                    {% endif %}
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

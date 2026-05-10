@@ -7,6 +7,7 @@ def load_from_file(filename):
         for line in infile:
                 parts = line.strip().split("#") # parts = ["2321123", " Aman", " 21.0 24.0"]
 
+                # move to next line
                 if len(parts) != 3:
                     continue
 
@@ -339,7 +340,8 @@ def save_to_file(students):
     with open("students.txt", "w") as file:
         for student in students:
             # Convert the grades list into one space-separated string
-            grades_text = " ".join(map(str, student["grades"]))
+            temp = map(str, student["grades"])
+            grades_text = " ".join(temp)
 
             # Write data in the same required format:
             # ID# Name# grade1 grade2 grade3
